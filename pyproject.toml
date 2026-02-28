@@ -9,4 +9,6 @@ dependencies = [
     "matplotlib",
     "transformer_lens",
     "ipykernel",
+    "numpy",
+    "scipy",
 ]
