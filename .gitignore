@@ -15,6 +15,12 @@ build/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
+# SAE feature emergence pipeline outputs
+sae_feature_emergence/checkpoints/
+sae_feature_emergence/activations/
+sae_feature_emergence/sae_models/
+sae_feature_emergence/results/
+
 # IDE / OS
 .idea/
 .DS_Store
