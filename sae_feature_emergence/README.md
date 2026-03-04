@@ -1,6 +1,6 @@
 # SAE feature emergence
 
-When do SAE-discovered features emerge and stabilize during training? We train a small transformer, train the same SAE at each checkpoint on one layer, and measure feature stability across time. Pipeline is built step by step; each step is runnable. At the end, a findings notebook loads saved results and presents the report.
+We study when and how SAE-discovered features emerge and stabilize during transformer training. We train a small transformer, train the same SAE at each checkpoint on one layer, and measure feature stability across time. Pipeline is built step by step; each step is runnable. A findings notebook loads saved results and presents the report.
 
 ---
 
@@ -10,10 +10,10 @@ When do SAE-discovered features emerge and stabilize during training? We train a
 How do interpretable (SAE-discovered) features emerge and stabilize during transformer training? Do they emerge gradually or abruptly? When do they become stable causal contributors?
 
 **Hypotheses**
-- **H1 — Gradual:** Feature identity stabilizes gradually. Mean cosine similarity between matched features across adjacent checkpoints increases smoothly with step.
-- **H2 — Sharp:** Feature identity stabilizes sharply after a critical loss regime. Clear jump in similarity (or drop in drift) at some step.
-- **H3 — Reorganization:** Features form early but reorganize later. Similarity may dip in the middle of training before stabilizing.
-
+- **H1 — Gradual:** Feature identity stabilizes gradually over training.
+- **H2 — Sharp:** Feature identity stabilizes sharply after a critical loss regime.
+- **H3 — Reorganization:** Features form early but reorganize later.
+ 
 **How we distinguish them**
 - Metrics: cosine similarity, drift, sparsity, logit contribution
 - Plots: similarity and drift vs step (and vs loss)
@@ -30,7 +30,7 @@ One model size, one layer, one SAE config (fixed across checkpoints).
 
 | Step | What we do | What we get | How we check it |
 |------|------------|-------------|-----------------|
-| 1 | Hypothesis: research question, H1/H2/H3 in one place | Hypothesis doc | Written down; we can point to it |
+| 1 | Hypothesis: research question, H1/H2/H3 | Hypothesis doc | Written down; we can point to it |
 | 2 | Config: model (layers, d_model, …), training (batch, lr, checkpoint steps), SAE (n_features, L1, which layer), paths | Config we can load | Load config; print e.g. checkpoint steps |
 | 3 | Model and data: decoder-only transformer, residual at one layer, synthetic token batches | Model and data loader | One forward pass; print batch, logits, residual shapes |
 | 4 | Training loop; save checkpoints and loss history at configured steps | `checkpoints/`, loss history | Run training; list checkpoint files, print final loss |
