@@ -1,6 +1,6 @@
 # Run from repo root. Uses uv for Python env.
 
-.PHONY: help sae-config sae-model sae-train sae-activations sae-train-sae sae-train-sae-all sae-stability
+.PHONY: help sae-config sae-model sae-train sae-activations sae-train-sae sae-train-sae-all sae-stability sae-stability-all
 
 help:
 	@echo "SAE feature emergence (run from repo root):"
@@ -11,6 +11,7 @@ help:
 	@echo "  make sae-train-sae     Train SAE on one checkpoint (optional: STEP=1000)."
 	@echo "  make sae-train-sae-all Train one SAE per checkpoint."
 	@echo "  make sae-stability     Similarity and drift for one SAE pair (STEP_A=100 STEP_B=400)."
+	@echo "  make sae-stability-all Consecutive pairs -> stability_results.json."
 
 sae-config:
 	uv run python sae_feature_emergence/config.py
@@ -34,3 +35,6 @@ STEP_A ?= 100
 STEP_B ?= 400
 sae-stability:
 	uv run python sae_feature_emergence/stability.py $(STEP_A) $(STEP_B)
+
+sae-stability-all:
+	uv run python sae_feature_emergence/stability.py --all
