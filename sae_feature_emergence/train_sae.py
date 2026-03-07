@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from config import SAEConfig, ACTIVATIONS_DIR, SAE_DIR, RESULTS_DIR
+from config import SAEConfig, ACTIVATIONS_DIR, SAE_DIR, RESULTS_DIR, get_device
 from sae import SAE 
 
 
@@ -85,15 +85,22 @@ if __name__ == "__main__":
     parser.add_argument("--all", action="store_true", help="Train one SAE per checkpoint.")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
+    print("Device:", device)
     if args.all:
-        steps = sorted(
+        available = sorted(
             int(p.stem.split("_")[1])
             for p in ACTIVATIONS_DIR.glob("step_*.pt")
         )
-        if not steps:
+        if not available:
             raise SystemExit("No activations found. Run make sae-activations first.")
+        cfg = SAEConfig()
+        steps = sorted(s for s in available if s in cfg.sae_checkpoint_steps)
+        if not steps:
+            raise SystemExit(f"No activations for SAE steps {cfg.sae_checkpoint_steps}. Run make sae-activations.")
+        print("SAE steps:", steps)
         for step in steps:
+            print(f"Checkpoint step {step}")
             train_sae(step, device)
         print("Saved SAEs:", [f"sae_step_{s}.pt" for s in steps])
     else:

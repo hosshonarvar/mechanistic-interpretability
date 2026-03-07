@@ -62,9 +62,10 @@ class SmallTransformer(nn.Module):
 
 
 if __name__ == "__main__":
+    from config import get_device
     from data import get_batch
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
     model_cfg = ModelConfig()
     train_cfg = TrainConfig()
     sae_cfg = SAEConfig()

@@ -3,11 +3,22 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+import torch
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints"
 ACTIVATIONS_DIR = PROJECT_ROOT / "activations"
 SAE_DIR = PROJECT_ROOT / "sae_models"
 RESULTS_DIR = PROJECT_ROOT / "results"
+
+
+def get_device() -> torch.device:
+    """CUDA if available, else MPS (Apple Silicon), else CPU."""
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
 
 
 @dataclass
@@ -37,9 +48,10 @@ class SAEConfig:
     n_features: int = 512
     l1_coeff: float = 1e-3
     lr: float = 1e-3
-    batch_size: int = 256
-    n_epochs: int = 2000
+    batch_size: int = 512
+    n_epochs: int = 1000
     sae_layer: int = 0
+    sae_checkpoint_steps: tuple = (100, 400, 1000, 2000)
 
 
 if __name__ == "__main__":

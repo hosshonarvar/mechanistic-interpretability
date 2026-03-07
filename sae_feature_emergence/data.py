@@ -19,9 +19,9 @@ def get_batch(
 
 
 if __name__ == "__main__":
-    from config import TrainConfig, ModelConfig
+    from config import TrainConfig, ModelConfig, get_device
     train = TrainConfig()
     model_cfg = ModelConfig()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
     batch = get_batch(train.batch_size, train.seq_len, model_cfg.vocab_size, device, seed=42)
     print("Batch shape:", batch.shape)

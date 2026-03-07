@@ -4,7 +4,7 @@ import json
 import torch
 from torch.nn import functional as F
 
-from config import ModelConfig, TrainConfig, CHECKPOINTS_DIR, RESULTS_DIR
+from config import ModelConfig, TrainConfig, CHECKPOINTS_DIR, RESULTS_DIR, get_device
 from model import SmallTransformer
 from data import get_batch
 
@@ -12,7 +12,8 @@ from data import get_batch
 def train() -> None:
     train_cfg = TrainConfig()
     model_cfg = ModelConfig()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
+    print("Device:", device)
     torch.manual_seed(train_cfg.seed)
 
     CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)

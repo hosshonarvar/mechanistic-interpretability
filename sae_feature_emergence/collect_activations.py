@@ -9,6 +9,7 @@ from config import (
     SAEConfig,
     CHECKPOINTS_DIR,
     ACTIVATIONS_DIR,
+    get_device,
 )
 from model import SmallTransformer
 from data import get_batch
@@ -55,7 +56,7 @@ def main() -> None:
     args = parser.parse_args()
 
     train_cfg = TrainConfig()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
     ACTIVATIONS_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.step is not None:
