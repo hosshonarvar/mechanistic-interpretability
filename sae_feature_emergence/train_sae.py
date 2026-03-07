@@ -80,9 +80,21 @@ def train_sae(step: int, device: torch.device) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train SAE on one checkpoint's activations.")
-    parser.add_argument("step", type=int, nargs="?", default=1000, help="Checkpoint step (default 1000).")
+    parser = argparse.ArgumentParser(description="Train SAE on one or all checkpoints' activations.")
+    parser.add_argument("step", type=int, nargs="?", default=None, help="Checkpoint step (default 1000).")
+    parser.add_argument("--all", action="store_true", help="Train one SAE per checkpoint.")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_sae(args.step, device)
+    if args.all:
+        steps = sorted(
+            int(p.stem.split("_")[1])
+            for p in ACTIVATIONS_DIR.glob("step_*.pt")
+        )
+        if not steps:
+            raise SystemExit("No activations found. Run make sae-activations first.")
+        for step in steps:
+            train_sae(step, device)
+        print("Saved SAEs:", [f"sae_step_{s}.pt" for s in steps])
+    else:
+        train_sae(args.step if args.step is not None else 1000, device)
