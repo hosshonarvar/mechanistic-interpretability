@@ -9,17 +9,14 @@ from config import RESULTS_DIR
 
 
 def plot_stability_vs_step(stability: list[dict], save_path: Path | None = None) -> None:
-    """Plot similarity and drift vs step_b. If save_path set, save and close; else show()."""
+    """Plot drift vs step_b. If save_path set, save and close; else show()."""
     step_b = [r["step_b"] for r in stability]
-    similarity = [r["similarity"] for r in stability]
     drift = [r["drift"] for r in stability]
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 5), sharex=True)
-    ax1.plot(step_b, similarity, "o-")
-    ax1.set_ylabel("Similarity")
-    ax1.set_title("Feature stability vs checkpoint step")
-    ax2.plot(step_b, drift, "o-")
-    ax2.set_xlabel("Step (end of pair)")
-    ax2.set_ylabel("Drift")
+    fig, ax = plt.subplots(figsize=(6, 3.5))
+    ax.plot(step_b, drift, "o-")
+    ax.set_xlabel("Step (end of pair)")
+    ax.set_ylabel("Drift (1 − similarity)")
+    ax.set_title("Feature stability vs checkpoint step")
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path)
@@ -33,20 +30,17 @@ def plot_stability_vs_loss(
     loss_by_step: dict[int, float],
     save_path: Path | None = None,
 ) -> None:
-    """Plot similarity and drift vs loss at step_b. If save_path set, save and close; else show()."""
+    """Plot drift vs loss at step_b. If save_path set, save and close; else show()."""
     step_b = [r["step_b"] for r in stability]
-    similarity = [r["similarity"] for r in stability]
     drift = [r["drift"] for r in stability]
     losses = [loss_by_step.get(s) for s in step_b]
     if any(l is None for l in losses):
         return
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 5), sharex=True)
-    ax1.plot(losses, similarity, "o-")
-    ax1.set_ylabel("Similarity")
-    ax1.set_title("Feature stability vs loss")
-    ax2.plot(losses, drift, "o-")
-    ax2.set_xlabel("Loss (at step_b)")
-    ax2.set_ylabel("Drift")
+    fig, ax = plt.subplots(figsize=(6, 3.5))
+    ax.plot(losses, drift, "o-")
+    ax.set_xlabel("Loss (at step_b)")
+    ax.set_ylabel("Drift (1 − similarity)")
+    ax.set_title("Feature stability vs loss")
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path)

@@ -48,6 +48,7 @@ def run_all_pairs() -> None:
         raise SystemExit("Need at least two SAEs. Run make sae-train-sae-all.")
     pairs = [(steps[i], steps[i + 1]) for i in range(len(steps) - 1)]
     results = []
+    print("Drift = 1 − similarity (lower drift = more stable).")
     for step_a, step_b in pairs:
         mean_sim, mean_drift = similarity_and_drift(step_a, step_b)
         results.append({
