@@ -37,8 +37,8 @@ class TrainConfig:
     batch_size: int = 32
     seq_len: int = 32
     lr: float = 3e-4
-    total_steps: int = 2000
-    checkpoint_steps: tuple = (100, 200, 400, 600, 800, 1000, 1300, 1600, 2000)
+    total_steps: int = 4000
+    checkpoint_steps: tuple = (100, 200, 400, 600, 800, 1000, 1300, 1600, 2000, 2500, 3000, 3500, 4000)
     seed: int = 42
 
 
@@ -51,7 +51,7 @@ class SAEConfig:
     batch_size: int = 512
     n_epochs: int = 1000
     sae_layer: int = 0
-    sae_checkpoint_steps: tuple = (100, 200, 400, 600, 800, 1000, 1300, 1600, 2000)
+    sae_checkpoint_steps: tuple = (100, 200, 400, 600, 800, 1000, 1300, 1600, 2000, 2500, 3000, 3500, 4000)
 
 
 if __name__ == "__main__":
