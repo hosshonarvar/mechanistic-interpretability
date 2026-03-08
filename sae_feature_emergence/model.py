@@ -60,6 +60,22 @@ class SmallTransformer(nn.Module):
                 return x
         return x
 
+    def forward_with_patched_resid(
+        self, x: torch.Tensor, layer_idx: int, patched_resid: torch.Tensor
+    ) -> torch.Tensor:
+        """Forward with residual at layer_idx replaced by patched_resid (B, T, d_model)."""
+        B, T = x.shape
+        x = self.embed(x) + self.pos_embed[:, :T, :]
+        for i, block in enumerate(self.blocks):
+            x = block(x)
+            if i == layer_idx:
+                x = patched_resid
+                break
+        for block in self.blocks[layer_idx + 1 :]:
+            x = block(x)
+        x = self.ln_f(x)
+        return self.head(x)
+
 
 if __name__ == "__main__":
     from config import get_device

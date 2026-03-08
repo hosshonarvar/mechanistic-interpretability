@@ -1,6 +1,6 @@
 # Run from repo root. Uses uv for Python env.
 
-.PHONY: help sae-config sae-model sae-train sae-activations sae-train-sae sae-train-sae-all sae-stability sae-stability-all sae-plots
+.PHONY: help sae-config sae-model sae-train sae-activations sae-train-sae sae-train-sae-all sae-stability sae-stability-all sae-plots sae-ablation
 
 help:
 	@echo "SAE feature emergence (run from repo root):"
@@ -13,6 +13,7 @@ help:
 	@echo "  make sae-stability     Similarity and drift for one SAE pair (STEP_A=100 STEP_B=400)."
 	@echo "  make sae-stability-all Consecutive pairs -> stability_results.json."
 	@echo "  make sae-plots        Stability and loss -> results/*.png."
+	@echo "  make sae-ablation     Ablate top-k features at step; print/save ΔCE (optional: STEP=2000, --save)."
 
 sae-config:
 	uv run python sae_feature_emergence/config.py
@@ -42,3 +43,7 @@ sae-stability-all:
 
 sae-plots:
 	uv run python sae_feature_emergence/plots.py
+
+STEP ?=
+sae-ablation:
+	uv run python sae_feature_emergence/ablation.py $(STEP) --save

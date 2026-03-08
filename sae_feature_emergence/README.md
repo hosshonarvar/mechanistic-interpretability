@@ -40,8 +40,8 @@ One model size, one layer, one SAE config (fixed across checkpoints).
 | 8 | Load two SAEs, feature directions, Hungarian match; compute similarity and drift | Similarity and drift for one pair | Run for one pair; print similarity and drift |
 | 9 | Loop consecutive checkpoint pairs; save metrics to JSON | `results/stability_results.json` | Produce file; print table |
 | 10 | Read stability and loss; write plots | `results/*.png` | Generate PNGs; confirm saved |
-| 11 | (Optional) Ablate top-k features, patch resid, measure cross-entropy change | Ablation result | Print/save ablation result |
-| 12 | One script runs steps 4–10 (and optionally 11); README says how to run and where results go | Pipeline | Run script; artifacts in checkpoints/, activations/, sae_models/, results/ |
+| 11 | Ablate top-k features, patch resid, measure cross-entropy change | Ablation result | Print/save ablation result |
+| 12 | One script runs steps 4–11; README says how to run and where results go | Pipeline | Run script; artifacts in checkpoints/, activations/, sae_models/, results/ |
 
 **Findings notebook**  
 Loads the outputs from the steps above (e.g. stability_results.json, plots, loss history, ablation). Presents them and interprets (what the curves suggest re H1/H2/H3; what ablation shows). Run the pipeline (or individual steps) first; then open the notebook to investigate.
