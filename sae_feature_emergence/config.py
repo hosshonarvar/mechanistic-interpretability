@@ -51,7 +51,7 @@ class SAEConfig:
     batch_size: int = 512
     n_epochs: int = 1000
     sae_layer: int = 0
-    sae_checkpoint_steps: tuple = (100, 400, 1000, 2000)
+    sae_checkpoint_steps: tuple = (100, 200, 400, 600, 800, 1000, 1300, 1600, 2000)
 
 
 if __name__ == "__main__":
