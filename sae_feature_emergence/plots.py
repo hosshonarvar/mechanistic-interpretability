@@ -7,19 +7,57 @@ import matplotlib.pyplot as plt
 
 from config import RESULTS_DIR
 
+# Style
+DRIFT_COLOR = "#1a5fb4"
+TRANSITION_ALPHA = 0.2
+TRANSITION_COLOR = "#1a5fb4"
+GRID_ALPHA = 0.35
 
-def plot_stability_vs_step(stability: list[dict], save_path: Path | None = None) -> None:
-    """Plot drift vs step_b. If save_path set, save and close; else show()."""
+
+def _phase_transition_bounds(stability: list[dict]) -> tuple[int | None, int | None]:
+    """Return (step_lo, step_hi) where drift drops the most (phase transition), or (None, None)."""
+    if len(stability) < 2:
+        return None, None
     step_b = [r["step_b"] for r in stability]
     drift = [r["drift"] for r in stability]
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    ax.plot(step_b, drift, "o-")
-    ax.set_xlabel("Step (end of pair)")
-    ax.set_ylabel("Drift (1 − similarity)")
-    ax.set_title("Feature stability vs checkpoint step")
+    drops = [drift[i] - drift[i + 1] for i in range(len(drift) - 1)]
+    i_max = drops.index(max(drops))
+    return step_b[i_max], step_b[i_max + 1]
+
+
+def _style_axis(ax: plt.Axes) -> None:
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(True, alpha=GRID_ALPHA, linestyle="--")
+    ax.set_axisbelow(True)
+
+
+def plot_stability_vs_step(stability: list[dict], save_path: Path | None = None) -> None:
+    """Plot drift vs step_b with phase-transition shading. If save_path set, save and close; else show()."""
+    step_b = [r["step_b"] for r in stability]
+    drift = [r["drift"] for r in stability]
+    fig, ax = plt.subplots(figsize=(7, 4))
+    _style_axis(ax)
+    step_lo, step_hi = _phase_transition_bounds(stability)
+    if step_lo is not None and step_hi is not None:
+        ax.axvspan(step_lo, step_hi, alpha=TRANSITION_ALPHA, color=TRANSITION_COLOR, zorder=0)
+        ax.annotate(
+            "regime change",
+            xy=((step_lo + step_hi) / 2, 1.0),
+            ha="center",
+            va="top",
+            fontsize=9,
+            color=TRANSITION_COLOR,
+            style="italic",
+        )
+    ax.plot(step_b, drift, "o-", color=DRIFT_COLOR, linewidth=2, markersize=7, zorder=2)
+    ax.set_xlabel("Training step (end of interval; drift = previous checkpoint → this)", fontsize=10)
+    ax.set_ylabel("Drift (1 − similarity)", fontsize=11)
+    ax.set_title("Feature stability vs checkpoint step", fontsize=12, fontweight="medium")
+    ax.set_ylim(0, 1.02)
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=150)
         plt.close()
     else:
         plt.show()
@@ -30,20 +68,37 @@ def plot_stability_vs_loss(
     loss_by_step: dict[int, float],
     save_path: Path | None = None,
 ) -> None:
-    """Plot drift vs loss at step_b. If save_path set, save and close; else show()."""
+    """Plot drift vs loss at step_b with phase-transition shading. If save_path set, save and close; else show()."""
     step_b = [r["step_b"] for r in stability]
     drift = [r["drift"] for r in stability]
     losses = [loss_by_step.get(s) for s in step_b]
     if any(l is None for l in losses):
         return
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    ax.plot(losses, drift, "o-")
-    ax.set_xlabel("Loss (at step_b)")
-    ax.set_ylabel("Drift (1 − similarity)")
-    ax.set_title("Feature stability vs loss")
+    step_lo, step_hi = _phase_transition_bounds(stability)
+    loss_lo = loss_by_step.get(step_lo) if step_lo is not None else None
+    loss_hi = loss_by_step.get(step_hi) if step_hi is not None else None
+    fig, ax = plt.subplots(figsize=(7, 4))
+    _style_axis(ax)
+    if loss_lo is not None and loss_hi is not None and loss_lo != loss_hi:
+        lo, hi = min(loss_lo, loss_hi), max(loss_lo, loss_hi)
+        ax.axvspan(lo, hi, alpha=TRANSITION_ALPHA, color=TRANSITION_COLOR, zorder=0)
+        ax.annotate(
+            "regime change",
+            xy=((lo + hi) / 2, 1.0),
+            ha="center",
+            va="top",
+            fontsize=9,
+            color=TRANSITION_COLOR,
+            style="italic",
+        )
+    ax.plot(losses, drift, "o-", color=DRIFT_COLOR, linewidth=2, markersize=7, zorder=2)
+    ax.set_xlabel("Loss (at end of interval)", fontsize=11)
+    ax.set_ylabel("Drift (1 − similarity)", fontsize=11)
+    ax.set_title("Feature stability vs loss", fontsize=12, fontweight="medium")
+    ax.set_ylim(0, 1.02)
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=150)
         plt.close()
     else:
         plt.show()
