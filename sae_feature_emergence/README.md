@@ -2,6 +2,11 @@
 
 We study when and how SAE-discovered features emerge and stabilize during transformer training. We train a small transformer, train the same SAE at each checkpoint on one layer, and measure feature stability across time. Pipeline is built step by step; each step is runnable. A findings notebook loads saved results and presents the report.
 
+**Layout**  
+- Top level: `findings.ipynb`, `README.md` (notebook and docs).
+- `scripts/`: all Python code (config, model, train, data, SAE, stability, ablation, max-activating, plots). Run from repo root via `make` (see main repo Makefile).
+- Data and outputs stay here: `checkpoints/`, `activations/`, `sae_models/`, `results/`.
+
 ---
 
 ## Research question and hypotheses

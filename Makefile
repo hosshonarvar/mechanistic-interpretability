@@ -18,38 +18,38 @@ help:
 	@echo "  make sae-all          Full pipeline: train -> activations -> train-sae-all -> stability-all -> plots -> ablation."
 
 sae-config:
-	uv run python sae_feature_emergence/config.py
+	uv run python sae_feature_emergence/scripts/config.py
 
 sae-model:
-	uv run python sae_feature_emergence/model.py
+	uv run python sae_feature_emergence/scripts/model.py
 
 sae-train:
-	uv run python sae_feature_emergence/train.py
+	uv run python sae_feature_emergence/scripts/train.py
 
 sae-activations:
-	uv run python sae_feature_emergence/collect_activations.py $(STEP)
+	uv run python sae_feature_emergence/scripts/collect_activations.py $(STEP)
 
 sae-train-sae:
-	uv run python sae_feature_emergence/train_sae.py $(STEP)
+	uv run python sae_feature_emergence/scripts/train_sae.py $(STEP)
 
 sae-train-sae-all:
-	uv run python sae_feature_emergence/train_sae.py --all
+	uv run python sae_feature_emergence/scripts/train_sae.py --all
 
 sae-stability:
-	uv run python sae_feature_emergence/stability.py $(STEP_A) $(STEP_B)
+	uv run python sae_feature_emergence/scripts/stability.py $(STEP_A) $(STEP_B)
 
 sae-stability-all:
-	uv run python sae_feature_emergence/stability.py --all
+	uv run python sae_feature_emergence/scripts/stability.py --all
 
 sae-plots:
-	uv run python sae_feature_emergence/plots.py
+	uv run python sae_feature_emergence/scripts/plots.py
 
 STEP ?=
 sae-ablation:
-	uv run python sae_feature_emergence/ablation.py $(STEP) --save
+	uv run python sae_feature_emergence/scripts/ablation.py $(STEP) --save
 
 sae-max-activating:
-	uv run python sae_feature_emergence/max_activating.py $(STEP) --save
+	uv run python sae_feature_emergence/scripts/max_activating.py $(STEP) --save
 
 sae-all: sae-train sae-activations sae-train-sae-all sae-stability-all sae-plots sae-ablation
 	@echo "Pipeline complete. See sae_feature_emergence/results/ and findings notebook."

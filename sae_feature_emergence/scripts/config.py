@@ -5,7 +5,8 @@ from pathlib import Path
 
 import torch
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+# Scripts live in sae_feature_emergence/scripts/; data dirs stay in sae_feature_emergence/
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints"
 ACTIVATIONS_DIR = PROJECT_ROOT / "activations"
 SAE_DIR = PROJECT_ROOT / "sae_models"
