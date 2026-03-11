@@ -12,11 +12,19 @@ For some of my past research, see my [Google Scholar](https://scholar.google.com
 
 ## Projects
 
-With that motivation in mind, I've started exploring the current state of research in mechanistic interpretability and sharing some of these initial explorations here. The first is [logit lens and activation patching](logit_lens_patching/logit_lens_and_patching.ipynb): when and where a model's prediction forms, and which layers matter for it. That's the kind of mechanism-level view I'm after.
+With that motivation in mind, I've started exploring the current state of research in mechanistic interpretability and sharing some of these initial explorations here.
 
 ### logit_lens_patching
 
-**Logit lens & activation patching** on a language model (TransformerLens + GPT-2 Small).
+**Logit lens & activation patching** on a language model (TransformerLens + GPT-2 Small): when and where a model's prediction forms, and which layers matter for it.
 
 - [README](logit_lens_patching/README.md)
 - [Notebook](logit_lens_patching/logit_lens_and_patching.ipynb)
+
+### sae_feature_emergence
+
+**SAE feature emergence:** when and how SAE-discovered features stabilize during transformer training, and whether they causally contribute. We train a small transformer, train the same SAE at each checkpoint on one layer, and measure drift (1 − similarity) across time; we then validate with top-k ablation (and random-k control) and show max-activating examples. Findings: a regime change around ~2k steps (drift drops then plateaus), and top features are causal.
+
+- [README](sae_feature_emergence/README.md)
+- [Findings notebook](sae_feature_emergence/findings.ipynb)
+- **Run from repo root:** `make help` for targets; `make sae-all` for the full pipeline (uses `uv`).

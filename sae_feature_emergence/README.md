@@ -20,9 +20,9 @@ How do interpretable (SAE-discovered) features emerge and stabilize during trans
 - **H3 — Reorganization:** Features form early but reorganize later.
  
 **How we distinguish them**
-- Metrics: cosine similarity, drift, sparsity, logit contribution
-- Plots: similarity and drift vs step (and vs loss)
-- Validation: zero or patch 2–3 features, measure logit impact
+- **Stability:** Drift = 1 − mean cosine similarity of matched feature directions (lower drift = more stable). Plots: drift vs step and vs loss, with regime-change shading.
+- **Causal validation:** Ablate top-k SAE feature contributions; measure ΔCE. Random-k control confirms the effect is specific to top features.
+- **Interpretability:** Max-activating examples show which token/context makes each feature fire (with synthetic data, mainly token detectors).
 
 **Scope**  
 One model size, one layer, one SAE config (fixed across checkpoints).
@@ -31,7 +31,7 @@ One model size, one layer, one SAE config (fixed across checkpoints).
 
 ## Implementation plan
 
-**Pipeline steps (1–12):** each step is runnable and produces something. The **findings notebook** loads those outputs and investigates them (interpretation, H1/H2/H3, ablation). Run a step, then you can inspect its output in the notebook or in the terminal.
+**Pipeline steps (1–12):** each step is runnable and produces something. The **findings notebook** loads those outputs and interprets them (drift, regime change, H1/H2/H3, ablation, max-activating examples). Run a step, then you can inspect its output in the notebook or in the terminal.
 
 | Step | What we do | What we get | How we check it |
 |------|------------|-------------|-----------------|
@@ -44,9 +44,19 @@ One model size, one layer, one SAE config (fixed across checkpoints).
 | 7 | Same SAE config; train one SAE per checkpoint | `sae_models/sae_step_*.pt` | Run for all steps; list saved SAE files |
 | 8 | Load two SAEs, feature directions, Hungarian match; compute similarity and drift | Similarity and drift for one pair | Run for one pair; print similarity and drift |
 | 9 | Loop consecutive checkpoint pairs; save metrics to JSON | `results/stability_results.json` | Produce file; print table |
-| 10 | Read stability and loss; write plots | `results/*.png` | Generate PNGs; confirm saved |
-| 11 | Ablate top-k features, patch resid, measure cross-entropy change | Ablation result | Print/save ablation result |
-| 12 | One script runs steps 4–11; README says how to run and where results go | Pipeline | Run script; artifacts in checkpoints/, activations/, sae_models/, results/ |
+| 10 | Read stability and loss; write drift plots (with regime-change shading) | `results/*.png` | Generate PNGs; confirm saved |
+| 11 | Ablate top-k features, patch resid, measure ΔCE; random-k control; save | `results/ablation_results.json` | Print/save ablation result |
+| 12 | Max-activating examples per feature (token + context) | `results/max_activating_results.json` | Run script; inspect examples in notebook |
 
 **Findings notebook**  
-Loads the outputs from the steps above (e.g. stability_results.json, plots, loss history, ablation). Presents them and interprets (what the curves suggest re H1/H2/H3; what ablation shows). Run the pipeline (or individual steps) first; then open the notebook to investigate.
+Loads the outputs from the steps above (stability_results.json, plots, loss history, ablation, max_activating_results.json if present). Presents drift and regime change, interprets H1/H2/H3, summarizes ablation (causal + random-k) and max-activating examples, and lists caveats and further experiments.
+
+---
+
+## How to run
+
+From the **repo root** (parent of `sae_feature_emergence/`), with `uv`:
+
+1. **`make sae-all`** — runs the full pipeline (train → activations → SAEs → stability → plots → ablation).
+2. **`make help`** — lists all targets (for individual steps or optional runs like `sae-max-activating`).
+3. Open **`sae_feature_emergence/findings.ipynb`** to view the report.
