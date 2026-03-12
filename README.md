@@ -23,8 +23,20 @@ With that motivation in mind, I've started exploring the current state of resear
 
 ### sae_feature_emergence
 
-**SAE feature emergence:** when and how SAE-discovered features stabilize during transformer training, and whether they causally contribute. We train a small transformer, train the same SAE at each checkpoint on one layer, and measure drift (1 − similarity) across time; we then validate with top-k ablation (and random-k control) and show max-activating examples. Findings: a regime change around ~2k steps (drift drops then plateaus), and top features are causal.
+**SAE feature emergence:** when and how SAE-discovered features stabilize during training, and whether they causally contribute.
 
+**What we did**
+- Train a small transformer; at each checkpoint, train the same SAE on one layer’s residual stream.
+- Measure **drift** (1 − mean cosine similarity of matched feature directions) across consecutive checkpoint pairs.
+- Validate with **top-k ablation** (zero top-k feature contributions, measure ΔCE) and **random-k** control.
+- Show **max-activating examples** (which token/context makes each feature fire).
+
+**Findings**
+- **Regime change:** Drift is high and roughly flat until ~2k steps, then **drops sharply** and **plateaus** at a lower level (~0.57–0.61). Feature directions stabilize after that point.
+- **Causal:** Top-k ablation increases loss (ΔCE > 0); random-k has no effect → the model relies on those features.
+- **Interpretable:** Some features are token detectors (e.g. one fires on comma); others sparse (synthetic data).
+
+**Links and run**
 - [README](sae_feature_emergence/README.md)
 - [Findings notebook](sae_feature_emergence/findings.ipynb)
 - **Run from repo root:** `make help` for targets; `make sae-all` for the full pipeline (uses `uv`).
