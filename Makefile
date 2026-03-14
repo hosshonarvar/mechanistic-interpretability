@@ -15,6 +15,7 @@ help:
 	@echo "  make sae-plots        Stability and loss -> results/*.png."
 	@echo "  make sae-ablation     Ablate top-k features at step; print/save ΔCE (optional: STEP=2000, --save)."
 	@echo "  make sae-max-activating Max-activating examples per feature -> results/max_activating_results.json (optional: STEP=4000)."
+	@echo "  make sae-feature-dynamics Dominant token & consistency per step -> results/feature_dynamics.json (optional: STEPS=1000,2000,3000,4000)."
 	@echo "  make sae-all          Full pipeline: train -> activations -> train-sae-all -> stability-all -> plots -> ablation."
 
 sae-config:
@@ -50,6 +51,10 @@ sae-ablation:
 
 sae-max-activating:
 	uv run python sae_feature_emergence/scripts/max_activating.py $(STEP) --save
+
+STEPS ?= 1000,2000,3000,4000
+sae-feature-dynamics:
+	uv run python sae_feature_emergence/scripts/feature_dynamics.py --steps "$(STEPS)" --save
 
 sae-all: sae-train sae-activations sae-train-sae-all sae-stability-all sae-plots sae-ablation
 	@echo "Pipeline complete. See sae_feature_emergence/results/ and findings notebook."

@@ -4,15 +4,18 @@ We study when and how SAE-discovered features emerge and stabilize during transf
 
 **Layout**  
 - Top level: `findings.ipynb`, `README.md` (notebook and docs).
-- `scripts/`: all Python code (config, model, train, data, SAE, stability, ablation, max-activating, plots). Run from repo root via `make` (see main repo Makefile).
+- `scripts/`: all Python code (config, model, train, data, SAE, stability, ablation, max-activating, feature_dynamics, plots). Run from repo root via `make` (see main repo Makefile).
 - Data and outputs stay here: `checkpoints/`, `activations/`, `sae_models/`, `results/`.
 
 ---
 
 ## Research question and hypotheses
 
-**Question**  
-How do interpretable (SAE-discovered) features emerge and stabilize during transformer training? Do they emerge gradually or abruptly? When do they become stable causal contributors?
+**Feature emergence dynamics**  
+Do SAE-discovered features emerge **gradually** during training or via **sudden phase transitions**? When do they become stable, and do they causally contribute to the model?
+
+**Experimental setup**  
+Train one SAE per checkpoint (same architecture, same layer) across training; match features across checkpoints (Hungarian on decoder directions); measure **drift** (1 − similarity) between consecutive pairs. Then test causality (ablation) and interpretability (max-activating examples).
 
 **Hypotheses**
 - **H1 — Gradual:** Feature identity stabilizes gradually over training.
@@ -47,9 +50,10 @@ One model size, one layer, one SAE config (fixed across checkpoints).
 | 10 | Read stability and loss; write drift plots (with regime-change shading) | `results/*.png` | Generate PNGs; confirm saved |
 | 11 | Ablate top-k features, patch resid, measure ΔCE; random-k control; save | `results/ablation_results.json` | Print/save ablation result |
 | 12 | Max-activating examples per feature (token + context) | `results/max_activating_results.json` | Run script; inspect examples in notebook |
+| 13 | Feature dynamics: dominant token and consistency per (step, feature) | `results/feature_dynamics.json` | Run `make sae-feature-dynamics` (optional STEPS=1000,2000,3000,4000); table + consistency-vs-step plot in notebook |
 
 **Findings notebook**  
-Loads the outputs from the steps above (stability_results.json, plots, loss history, ablation, max_activating_results.json if present). Presents drift and regime change, interprets H1/H2/H3, summarizes ablation (causal + random-k) and max-activating examples, and lists caveats and further experiments.
+Loads the outputs from the steps above (stability_results.json, plots, loss history, ablation, max_activating_results.json, feature_dynamics.json if present). Presents drift and regime change, interprets H1/H2/H3, summarizes ablation (causal + random-k), max-activating examples, and feature dynamics (dominant token and consistency over steps; phase transition in interpretability). Lists caveats and further experiments.
 
 ---
 
@@ -58,5 +62,5 @@ Loads the outputs from the steps above (stability_results.json, plots, loss hist
 From the **repo root** (parent of `sae_feature_emergence/`), with `uv`:
 
 1. **`make sae-all`** — runs the full pipeline (train → activations → SAEs → stability → plots → ablation).
-2. **`make help`** — lists all targets (for individual steps or optional runs like `sae-max-activating`).
+2. **`make help`** — lists all targets (for individual steps or optional runs like `sae-max-activating`, `sae-feature-dynamics`).
 3. Open **`sae_feature_emergence/findings.ipynb`** to view the report.
