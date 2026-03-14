@@ -25,6 +25,10 @@ With that motivation in mind, I've started exploring the current state of resear
 
 **SAE feature emergence:** when and how SAE-discovered features stabilize during training, and whether they causally contribute.
 
+![Feature stability vs step: drift drops sharply around ~2k steps then plateaus.](sae_feature_emergence/results/stability_vs_step.png)
+
+*Drift (1 − mean cosine similarity of matched feature directions) between consecutive checkpoints. Regime change around ~2k steps; directions stabilize afterward. Generate with `make sae-plots`.*
+
 **What we did**
 - Train a small transformer; at each checkpoint, train the same SAE on one layer’s residual stream.
 - Measure **drift** (1 − mean cosine similarity of matched feature directions) across consecutive checkpoint pairs.
@@ -35,6 +39,10 @@ With that motivation in mind, I've started exploring the current state of resear
 - **Regime change:** Drift is high and roughly flat until ~2k steps, then **drops sharply** and **plateaus** at a lower level (~0.57–0.61). Feature directions stabilize after that point.
 - **Causal:** Top-k ablation increases loss (ΔCE > 0); random-k has no effect → the model relies on those features.
 - **Interpretable:** Some features are token detectors (e.g. one fires on comma); others sparse (synthetic data).
+
+**Limitations**
+- One model size, one layer, one SAE config; synthetic data.
+- Results may not generalize to larger models, other layers, or real data.
 
 **Links and run**
 - [README](sae_feature_emergence/README.md)

@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from config import RESULTS_DIR
