@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 
 import matplotlib
-matplotlib.use("Agg")
+if __name__ == "__main__":
+    matplotlib.use("Agg")  # headless only when run from CLI (make sae-plots)
 import matplotlib.pyplot as plt
 
 from config import RESULTS_DIR

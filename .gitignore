@@ -19,8 +19,8 @@ build/
 sae_feature_emergence/checkpoints/
 sae_feature_emergence/activations/
 sae_feature_emergence/sae_models/
-sae_feature_emergence/results/
-# Allow the one figure used in the main README
+# Ignore results contents but allow the README figure to be committed
+sae_feature_emergence/results/*
 !sae_feature_emergence/results/stability_vs_step.png
 
 # IDE / OS
