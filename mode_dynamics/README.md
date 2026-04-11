@@ -1,6 +1,10 @@
-# Mode Dynamics
+# Mode Dynamics of Neural Network Learning
 
-Goal: describe neural network learning as a structured superposition of collective modes whose amplitudes evolve over time and whose directions map to interpretable functions or behaviors. In favorable regimes, this decomposition may become effectively low-dimensional.
+Goal: describe neural network learning as a structured superposition of collective modes whose amplitudes evolve over time, where each mode induces an interpretable function or behavior in the model’s output. In favorable regimes, this decomposition may become effectively low-dimensional.
+
+## Key Hypothesis
+
+Learning dynamics are structured and decomposable into collective modes, and these modes correspond to meaningful patterns in function space.
 
 ## End-to-End Story (First Principles)
 
@@ -9,6 +13,25 @@ We start from gradient descent and progressively build a mode-level description 
 $$
 \theta_t \;\rightarrow\; v_t \;\rightarrow\; \{u_k\} \;\rightarrow\; a_{k,t} \;\rightarrow\; \phi_k(x) \;\rightarrow\; \Delta f_t(x)\ \text{reconstruction}
 $$
+
+## Core Equations
+
+$$
+v_t = \sum_k a_{k,t} u_k
+$$
+
+$$
+\phi_k(x) = \nabla_\theta f(x,\theta)^T u_k
+$$
+
+$$
+\Delta f_t(x) \approx \sum_k a_{k,t}\phi_k(x)
+$$
+
+Interpretation:
+- $u_k$: collective parameter-space mode
+- $a_{k,t}$: amplitude of mode $k$ at time $t$
+- $\phi_k(x)$: output-space pattern induced by mode $u_k$
 
 ## Step 1) Set up the simplest task
 
@@ -66,7 +89,7 @@ $$
 \mathbf{V} = Q \Sigma W^T
 $$
 
-Take right singular vectors $u_k$ as collective parameter-space modes.
+Take right singular vectors $u_k$ as collective directions in parameter space, interpreted as learning modes.
 
 Primary question: does one mode dominate on single-sine?
 
@@ -93,6 +116,8 @@ For each important $u_k$, compute induced function direction:
 $$
 \phi_k(x) \approx \frac{f(x,\theta+\epsilon u_k)-f(x,\theta)}{\epsilon}
 $$
+
+This is the pattern added to the model’s output when moving slightly along mode $u_k$.
 
 This is the bridge from internal mode to observable behavior.
 
