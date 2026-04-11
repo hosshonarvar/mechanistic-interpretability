@@ -1,6 +1,6 @@
 # Mode Dynamics
 
-Goal: describe neural network learning as a small set of collective update modes instead of millions of independent parameters.
+Goal: describe neural network learning as a structured superposition of collective modes whose amplitudes evolve over time and whose directions map to interpretable functions or behaviors. In favorable regimes, this decomposition may become effectively low-dimensional.
 
 ## End-to-End Story (First Principles)
 
