@@ -1,42 +1,49 @@
 # Mode Dynamics
 
-Compact experiment for studying whether gradient-based learning evolves in a small number of dominant update modes.
+Goal: describe neural network learning as a small set of collective update modes instead of millions of independent parameters.
 
-## Project story (end-to-end)
+## End-to-End Story (First Principles)
 
-Train a small network on `y = sin(x)`, record parameter updates during optimization, and test whether those updates are low-rank in parameter space.
-
-Pipeline:
+We start from gradient descent and progressively build a mode-level description of learning:
 
 $$
-\theta_t \rightarrow v_t \rightarrow \{u_k\} \rightarrow a_{k,t} \rightarrow c_k(t) \rightarrow \phi_k(x,t)
+\theta_t \;\rightarrow\; v_t \;\rightarrow\; \{u_k\} \;\rightarrow\; a_{k,t} \;\rightarrow\; \phi_k(x) \;\rightarrow\; \Delta f_t(x)\ \text{reconstruction}
 $$
 
-where:
+## Step 1) Set up the simplest task
 
-- \(v_t = \theta_{t+1} - \theta_t\) is the update velocity
-- \(u_k\) are parameter-space modes (right singular vectors of the velocity matrix)
-- \(a_{k,t} = u_k^\top v_t\) are per-step mode amplitudes
-- \(c_k(t) = \sum_{\tau < t} a_{k,\tau}\) are cumulative mode coordinates
-- \(\phi_k(x,t) = \nabla_\theta f(x;\theta_t)^\top u_k\) are induced functional directions
-
-## Core equations
-
-Gradient descent:
+Use a single-pattern dataset:
 
 $$
-\theta_{t+1} = \theta_t - \eta \nabla_\theta L(\theta_t),
-\quad
-v_t = -\eta \nabla_\theta L(\theta_t)
+y = \sin(x), \quad x \in [0, 2\pi]
 $$
 
-Small-step loss change:
+Why: this is the cleanest case where one dominant learning mode is plausible.
+
+## Step 2) Train a small, readable model
+
+Use a tiny MLP (1 input, 1 hidden layer, small width), MSE loss, and plain SGD.
+
+Why: simpler optimization dynamics are easier to interpret.
+
+## Step 3) Save checkpoints over training
+
+At regular intervals, store:
+- parameters $\theta_t$
+- train loss
+- model predictions on a fixed $x$-grid
+
+This gives both parameter-space and function-space trajectories.
+
+## Step 4) Compute update velocities
+
+From checkpoints:
 
 $$
-L_{t+1} - L_t \approx \nabla L(\theta_t)^\top v_t = -\frac{1}{\eta}\|v_t\|^2
+v_t = \theta_{t+1} - \theta_t = -\eta \nabla_\theta L(\theta_t)
 $$
 
-Velocity matrix and mode extraction:
+Stack them into:
 
 $$
 \mathbf{V} =
@@ -46,33 +53,89 @@ v_1^T \\
 \vdots \\
 v_{T-1}^T
 \end{bmatrix}
-\in \mathbb{R}^{T \times P},
-\qquad
+\in \mathbb{R}^{T \times P}
+$$
+
+$\mathbf{V}$ is the raw learning-dynamics object.
+
+## Step 5) Extract learning modes
+
+Run SVD/PCA on $\mathbf{V}$:
+
+$$
 \mathbf{V} = Q \Sigma W^T
 $$
 
-Mode decomposition:
+Take right singular vectors $u_k$ as collective parameter-space modes.
+
+Primary question: does one mode dominate on single-sine?
+
+## Step 6) Measure mode contribution over time
+
+Project each update onto modes:
 
 $$
-v_t = \sum_k a_{k,t}u_k,
-\quad
-a_{k,t}=u_k^\top v_t,
-\quad
-\rho_{k,t}=\frac{a_{k,t}^2}{\sum_j a_{j,t}^2}
+a_{k,t} = u_k^T v_t
 $$
 
-## What to look for
+Energy share per step:
 
-- **Low-dimensional learning:** a small number of PCs explain most trajectory variance.
-- **Mode dominance:** \(\rho_{1,t}\) (or top-\(K\) sum) stays high for much of training.
-- **Dissipation:** \(\|v_t\|\) decreases over time.
-- **Behavioral meaning:** perturbing along \(u_k\) changes function outputs in interpretable ways.
+$$
+\rho_{k,t} = \frac{a_{k,t}^2}{\sum_j a_{j,t}^2}
+$$
 
-## Files
+This quantifies which modes are doing the learning at each time.
 
-- `mode_dynamics.py`: reusable module (dataset, model, tracking, PCA)
-- `experiment.py`: script that runs the full analysis and produces plots
-- `mode_dynamics_walkthrough.ipynb`: notebook walkthrough with visual diagnostics
+## Step 7) Map modes to visible function patterns
+
+For each important $u_k$, compute induced function direction:
+
+$$
+\phi_k(x) \approx \frac{f(x,\theta+\epsilon u_k)-f(x,\theta)}{\epsilon}
+$$
+
+This is the bridge from internal mode to observable behavior.
+
+## Step 8) Reconstruct function change from modes
+
+Use:
+
+$$
+\Delta f_t(x) \approx \sum_k a_{k,t}\phi_k(x)
+$$
+
+Then check whether top 1-2 modes explain most of the actual output change.
+
+## Step 9) Plot only core diagnostics
+
+- loss vs training step
+- predictions at early/mid/late checkpoints
+- explained variance of modes
+- $\rho_{k,t}$ over time
+- top induced function $\phi_1(x)$
+- actual vs reconstructed output change
+
+## Step 10) Success criteria (single-sine stage)
+
+Success means:
+- one mode explains most variance in $\mathbf{V}$
+- one mode carries most learning energy ($\rho_{1,t}$ high)
+- $\phi_1(x)$ matches the residual learning direction
+- 1-mode reconstruction captures most $\Delta f_t(x)$
+
+## Step 11) Scale gradually after baseline works
+
+1. $y=\sin(x)$
+2. $y=\sin(x)+0.5\sin(2x)$
+3. richer frequency mixtures
+4. noisy synthetic data
+5. real data
+
+## Project files
+
+- `mode_dynamics.py`: dataset/model/training/PCA utilities
+- `experiment.py`: script run of the baseline pipeline
+- `mode_dynamics_walkthrough.ipynb`: exploratory walkthrough and plots
 
 ## Run
 
