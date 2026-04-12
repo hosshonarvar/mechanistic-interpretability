@@ -1,72 +1,174 @@
 # Mode Dynamics of Neural Network Learning
 
-Goal: describe neural network learning as a structured superposition of collective modes whose amplitudes evolve over time, where each mode induces an interpretable function or behavior in the model’s output. In favorable regimes, this decomposition may become effectively low-dimensional.
+**Goal:** describe neural network learning as a structured superposition of collective modes whose amplitudes evolve over time, where each mode induces an interpretable function or behavior in the model’s output. In favorable regimes, this decomposition may become effectively low-dimensional.
+
+---
 
 ## Key Hypothesis
 
 Learning dynamics are structured and decomposable into collective modes, and these modes correspond to meaningful patterns in function space.
 
+---
+
 ## End-to-End Story (First Principles)
 
-We start from gradient descent and progressively build a mode-level description of learning:
+We learn a shared mode basis $\{u_k\}$ from training dynamics and use it to describe how the model evolves in function space.
+
+### 1) Local learning dynamics (core pipeline)
 
 $$
-\theta_t \;\rightarrow\; v_t \;\rightarrow\; \{u_k\} \;\rightarrow\; a_{k,t} \;\rightarrow\; \phi_k(x) \;\rightarrow\; \Delta f_t(x)\ \text{reconstruction}
+\theta_t 
+\;\rightarrow\; 
+v_t = \theta_{t+1} - \theta_t 
+\;\rightarrow\; 
+\{u_k\} 
+\;\rightarrow\; 
+a_{k,t} = u_k^\top v_t 
+\;\rightarrow\; 
+\phi_k(x, \theta_t) 
+\;\rightarrow\; 
+\Delta f_t(x)
 $$
+
+This is the fundamental object: **how the model changes at each step**.
+
+---
+
+### 2) Local reconstruction (validated)
+
+$$
+\Delta f_t(x) 
+\;\approx\; 
+\sum_k a_{k,t}\,\phi_k(x, \theta_t)
+$$
+
+This describes learning as a superposition of mode-induced function updates.
+
+---
+
+### 3) Global function evolution (path-integrated)
+
+$$
+f_t(x) 
+\;=\; 
+f_0(x) 
+\;+\; 
+\sum_{\tau=0}^{t-1} \Delta f_\tau(x)
+$$
+
+Combining with mode decomposition:
+
+$$
+f_t(x) - f_0(x)
+\;\approx\;
+\sum_{\tau=0}^{t-1} \sum_k a_{k,\tau}\,\phi_k(x, \theta_\tau)
+$$
+
+---
+
+### ⚠️ Important clarification
+
+A single fixed linear expansion:
+
+$$
+f_t(x) \approx f_{\text{ref}}(x) + \sum_k \alpha_{k,t}\,\phi_k^{\text{ref}}(x)
+$$
+
+is **not generally valid**, because:
+
+- $\nabla_\theta f(x, \theta)$ changes during training  
+- neural networks are nonlinear in parameters  
+- learning is path-dependent  
+
+---
 
 ## Core Equations
 
-$$
-v_t = \sum_k a_{k,t} u_k
-$$
+### A) Update-space decomposition
+
+Let:
 
 $$
-\phi_k(x) = \nabla_\theta f(x,\theta)^T u_k
+v_t = \theta_{t+1} - \theta_t
 $$
 
+Decompose:
+
 $$
-\Delta f_t(x) \approx \sum_k a_{k,t}\phi_k(x)
+v_t = \sum_k a_{k,t} u_k, \qquad a_{k,t} = u_k^\top v_t
 $$
 
-Interpretation:
-- $u_k$: collective parameter-space mode
-- $a_{k,t}$: amplitude of mode $k$ at time $t$
-- $\phi_k(x)$: output-space pattern induced by mode $u_k$
+Induced function:
+
+$$
+\phi_k(x, \theta_t) 
+\;\approx\; 
+\frac{f(x, \theta_t + \epsilon u_k) - f(x, \theta_t)}{\epsilon}
+$$
+
+Then:
+
+$$
+\Delta f_t(x)
+\;=\;
+f(x, \theta_{t+1}) - f(x, \theta_t)
+\;\approx\;
+\sum_k a_{k,t}\,\phi_k(x, \theta_t)
+$$
+
+Per-step energy:
+
+$$
+\rho_{k,t} = \frac{a_{k,t}^2}{\sum_j a_{j,t}^2}
+$$
+
+---
+
+## Notation at a glance
+
+- $u_k$: parameter-space mode (learned from dynamics)  
+- $a_{k,t}$: coefficient of update $v_t$  
+- $\phi_k(x, \theta_t)$: induced function at time $t$  
+- $\rho_{k,t}$: mode energy contribution  
+
+---
 
 ## Step 1) Set up the simplest task
-
-Use a single-pattern dataset:
 
 $$
 y = \sin(x), \quad x \in [0, 2\pi]
 $$
 
-Why: this is the cleanest case where one dominant learning mode is plausible.
+Why: clean single-pattern system.
+
+---
 
 ## Step 2) Train a small, readable model
 
-Use a tiny MLP (1 input, 1 hidden layer, small width), MSE loss, and plain SGD.
+- tiny MLP  
+- 1 hidden layer  
+- MSE loss  
+- SGD  
 
-Why: simpler optimization dynamics are easier to interpret.
+---
 
-## Step 3) Save checkpoints over training
+## Step 3) Save checkpoints
 
-At regular intervals, store:
-- parameters $\theta_t$
-- train loss
-- model predictions on a fixed $x$-grid
+Store:
 
-This gives both parameter-space and function-space trajectories.
+- $\theta_t$  
+- loss  
+- predictions on a fixed grid  
+
+---
 
 ## Step 4) Compute update velocities
 
-From checkpoints:
-
 $$
-v_t = \theta_{t+1} - \theta_t = -\eta \nabla_\theta L(\theta_t)
+v_t = \theta_{t+1} - \theta_t
 $$
 
-Stack them into:
+Stack:
 
 $$
 \mathbf{V} =
@@ -79,88 +181,113 @@ v_{T-1}^T
 \in \mathbb{R}^{T \times P}
 $$
 
-$\mathbf{V}$ is the raw learning-dynamics object.
+---
 
 ## Step 5) Extract learning modes
-
-Run SVD/PCA on $\mathbf{V}$:
 
 $$
 \mathbf{V} = Q \Sigma W^T
 $$
 
-Take right singular vectors $u_k$ as collective directions in parameter space, interpreted as learning modes.
-
-Primary question: does one mode dominate on single-sine?
-
-## Step 6) Measure mode contribution over time
-
-Project each update onto modes:
+Take:
 
 $$
-a_{k,t} = u_k^T v_t
+u_k = \text{columns of } W
 $$
 
-Energy share per step:
+These are collective parameter-space modes.
+
+---
+
+## Step 6) Measure mode contribution
+
+$$
+a_{k,t} = u_k^\top v_t
+$$
 
 $$
 \rho_{k,t} = \frac{a_{k,t}^2}{\sum_j a_{j,t}^2}
 $$
 
-This quantifies which modes are doing the learning at each time.
+---
 
-## Step 7) Map modes to visible function patterns
-
-For each important $u_k$, compute induced function direction:
+## Step 7) Map modes to function space
 
 $$
-\phi_k(x) \approx \frac{f(x,\theta+\epsilon u_k)-f(x,\theta)}{\epsilon}
+\phi_k(x, \theta_t) 
+\;\approx\; 
+\frac{f(x, \theta_t + \epsilon u_k) - f(x, \theta_t)}{\epsilon}
 $$
 
-This is the pattern added to the model’s output when moving slightly along mode $u_k$.
+Interpretation:
 
-This is the bridge from internal mode to observable behavior.
+$\phi_k(x)$ is the pattern added to the output when moving along $u_k$.
 
-## Step 8) Reconstruct function change from modes
+---
 
-Use:
+## Step 8) Reconstruct function updates
 
 $$
-\Delta f_t(x) \approx \sum_k a_{k,t}\phi_k(x)
+\Delta f_t(x) 
+\;\approx\; 
+\sum_k a_{k,t}\,\phi_k(x, \theta_t)
 $$
 
-Then check whether top 1-2 modes explain most of the actual output change.
+This is the primary validation step.
 
-## Step 9) Plot only core diagnostics
+---
 
-- loss vs training step
-- predictions at early/mid/late checkpoints
-- explained variance of modes
-- $\rho_{k,t}$ over time
-- top induced function $\phi_1(x)$
-- actual vs reconstructed output change
+## Step 9) Diagnostics
 
-## Step 10) Success criteria (single-sine stage)
+Plot:
 
-Success means:
-- one mode explains most variance in $\mathbf{V}$
-- one mode carries most learning energy ($\rho_{1,t}$ high)
-- $\phi_1(x)$ matches the residual learning direction
-- 1-mode reconstruction captures most $\Delta f_t(x)$
+- loss vs epoch  
+- predictions over time  
+- explained variance of modes  
+- $\rho_{k,t}$ over time  
+- $\phi_k(x, t)$  
+- $\Delta f_t$ reconstruction  
 
-## Step 11) Scale gradually after baseline works
+---
 
-1. $y=\sin(x)$
-2. $y=\sin(x)+0.5\sin(2x)$
-3. richer frequency mixtures
-4. noisy synthetic data
-5. real data
+## Step 10) Success criteria
+
+- modes explain most variance in $\mathbf{V}$  
+- few modes dominate $\rho_{k,t}$  
+- $\phi_k(x)$ are structured  
+- $\Delta f_t(x)$ is well reconstructed with small $K$  
+
+---
+
+## Step 11) Scaling plan
+
+1. $\sin(x)$  
+2. $\sin(x) + 0.5\sin(2x)$  
+3. richer mixtures  
+4. noisy data  
+5. real data  
+
+---
+
+## Key Insight
+
+Learning is best described as:
+
+> a superposition of mode-induced function updates over time
+
+not:
+
+> a static decomposition of the final function
+
+---
 
 ## Project files
 
-- `mode_dynamics.py`: dataset/model/training/PCA utilities
-- `experiment.py`: script run of the baseline pipeline
-- `mode_dynamics_walkthrough.ipynb`: exploratory walkthrough and plots
+- `mode_dynamics.py`  
+- `experiment.py`  
+- `mode_dynamics_walkthrough.ipynb`  
+
+---
 
 ## Run
 
